@@ -15,6 +15,7 @@
 #include "NeighborTracker.hpp"
 #include "Misc.hpp"
 #include "Move.hpp"
+#include <thread>
 
 using namespace benzene;
 
