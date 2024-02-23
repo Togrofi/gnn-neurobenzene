@@ -3,7 +3,6 @@
 #include<utility>
 #include <ConstBoard.hpp>
 #include <cfloat>
-#include <tensorflow/c/c_api.h>
 #include <cassert>
 
 
@@ -70,23 +69,6 @@ void NNEvaluator::load_nn_model(std::string model_path){
     
     uint8_t config[15]= {0x32, 0xb, 0x9, 0xb8, 0x1e, 0x85, 0xeb, 0x51, 0xb8, 0xae, 0x3f, 0x20, 0x1, 0x38, 0x1};
     TF_SetConfig(opts, (void*)config, 15, status);
-    /*
-       comes from:
-       import tensorflow as tf
-       config=tf.ConfigProto()
-       config.gpu_options.allow_growth=True
-       config.allow_soft_placement=True
-	   config.gpu_options.per_process_gpu_memory_fraction=0.06
-	   x=config.SerializeToString()
-       print(list(map(hex,x)))
-       ['0x32', '0xb', '0x9', '0xb8', '0x1e', '0x85', '0xeb', '0x51', '0xb8', '0xae', '0x3f', '0x20', '0x1', '0x38', '0x1']
-    */
-    //TF_SetConfig(opts, )
-    //TF_Session* sess = TF_NewSession(graph, options, status);
-    //TF_DeleteSessionOptions(options);
-
-    //C++ opts->config.mutable_gpu_options()->set_per_process_gpu_memory_fraction(0.1);
-    //C++ opts->config.mutable_gpu_options()->set_allow_growth(true);
 
     this->m_sess=TF_NewSession(graph, opts, status);
     TF_DeleteSessionOptions(opts);

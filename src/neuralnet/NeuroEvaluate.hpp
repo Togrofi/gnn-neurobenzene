@@ -4,7 +4,6 @@
 #include "Bitset.hpp"
 #include "BitsetIterator.hpp"
 #include <vector>
-#include <tensorflow/c/c_api.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

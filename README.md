@@ -16,34 +16,6 @@ sudo apt-get install libdb-dev
 
 On Mac, use `brew` instead.
 
-As November 25th 2018, this repository supports C API from [TensorFlow 1.12](https://www.tensorflow.org/install/lang_c), 
-therefore it is unnecessary to compile `TensorFlow` from source anymore! 
-
-But, you need to setup C API first, by the following instructions: 
-
-- GPU 
-    Only supported on Linux. Sepcifically, pre-released `Tensorflow C API 1.12` requires `CUDA-9.0` and `CUDNN 7.1.4`, make sure you have them in your system. 
-    ```sh
-    cd tensorflow_c_gpu/
-    source setup_tf.sh
-    ```
-
-- CPU (Mac or Linux)
-    ```sh
-    cd tensorflow_c_cpu/
-    source setup_tf.sh
-    ```
-
-At `tensorflow_c_cpu` or `tensorflow_c_gpu`, there is test source code `hello_tf.c`, you may try 
-    ```sh
-    gcc hello_tf.c -o test_hello -ltensorflow -ltensorflow_framework
-    ./test_hello
-    ```
-To verify that your `TensorFlow C API` have been correctly set up. If so, it should display 
-```
-Hello from TensorFlow C library version 1.12.0
-```
-
 ### How to build? 
 
 After everything is ready, build the project by: 
