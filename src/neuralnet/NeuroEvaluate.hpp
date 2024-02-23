@@ -25,9 +25,7 @@
 class NNEvaluator {
 
 public:
-    //Session *m_sess;
-    TF_Session *m_sess;
-    TF_Graph *m_graph;
+    torch::jit::script::Module m_module;
     std::string m_neural_model_path;
     const static size_t m_input_padding=1;
     const static size_t m_input_depth=4;
@@ -41,13 +39,10 @@ public:
 public:
     NNEvaluator(std::string nn_model_path);
     NNEvaluator();
-    ~NNEvaluator();
 
     void load_nn_model(std::string nn_model_path);
     float evaluate(const benzene::bitset_t &black, const benzene::bitset_t &white, benzene::HexColor toplay,
                    std::vector<float> &pScore, std::vector<float> &qValues, int boardsize) const;
-    TF_Tensor* make_input_tensor(const benzene::bitset_t &black_stones, const benzene::bitset_t &white_stones,
+    torch::Tensor* make_input_tensor(const benzene::bitset_t &black_stones, const benzene::bitset_t &white_stones,
             benzene::HexColor toplay, int boardsize) const;
 };
-
-#endif

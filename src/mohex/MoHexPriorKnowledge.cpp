@@ -40,7 +40,6 @@ SgUctValue MoHexPriorKnowledge::ProcessPosition(std::vector<SgUctMoveInfo>& move
     int boardsize=m_state.State().Position().Width();
     std::vector<float> nn_score(boardsize*boardsize);
     std::vector<float> q_values(boardsize*boardsize);
-    //m_state.Search().GetNNEvaluator().evaluate(black_played_stones, white_played_stones,m_state.State().ToPlay(), nn_score);
 
     auto evaFuture=std::async([this, &black_played_stones, &white_played_stones, &nn_score, &q_values, &boardsize]{
         return this->m_state.Search().GetNNEvaluator().evaluate(black_played_stones,
