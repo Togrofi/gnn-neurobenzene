@@ -19,7 +19,6 @@
  * 2: empty points
  * 3: toplay (all 0 for black, 1 for white)
  *
- * border padding is 1. 
  */
 
 class NNEvaluator {
@@ -27,12 +26,10 @@ class NNEvaluator {
 public:
     torch::jit::script::Module m_module;
     std::string m_neural_model_path;
-    const static size_t m_input_padding=1;
-    const static size_t m_input_depth=4;
+    const static size_t m_input_depth=3;
     const static int BlackStones=0;
     const static int WhiteStones=1;
     const static int ToPlayEmptyPoints=2;
-    const static int IndToPlay=3;
     double m_min_q_combine_weight;
     double m_q_weight_to_p;
     double m_product_propagate_weight;
@@ -43,6 +40,6 @@ public:
     void load_nn_model(std::string nn_model_path);
     float evaluate(const benzene::bitset_t &black, const benzene::bitset_t &white, benzene::HexColor toplay,
                    std::vector<float> &pScore, std::vector<float> &qValues, int boardsize) const;
-    torch::Tensor* make_input_tensor(const benzene::bitset_t &black_stones, const benzene::bitset_t &white_stones,
-            benzene::HexColor toplay, int boardsize) const;
+    std::vector<torch::jit::IValue> make_input_tensor(const benzene::bitset_t &black_stones, const benzene::bitset_t &white_stones,
+                                                      benzene::HexColor toplay, int boardsize) const;
 };

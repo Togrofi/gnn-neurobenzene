@@ -1,4 +1,5 @@
 #include<iostream>
+#include <stdexcept>
 #include<vector>
 #include<utility>
 #include <ConstBoard.hpp>
@@ -24,57 +25,68 @@ NNEvaluator::NNEvaluator(std::string model_path):m_module(),
 void NNEvaluator::load_nn_model(std::string model_path){
     this->m_module = torch::jit::load(model_path, torch::kCPU);
 }
-Tensor* NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
+std::vector<torch::jit::IValue>
+NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
                                     const benzene::bitset_t &white_stones, benzene::HexColor toplay, 
                                     int boardsize) const {
-    size_t i,j, k;
-    int x,y;
-    const std::vector<std::int64_t> input_dims = {1, boardsize*boardsize, m_input_depth};
-    float input_vals[1][boardsize*boardsize][m_input_depth];
-    //set the empty points
-    for (i=0;i<boardsize;i++){
-        for(j=0;j<boardsize;j++){
-            for(k=0;k<m_input_depth; k++){
-                input_vals[0][i][j][k]=0;
-                if(k==ToPlayEmptyPoints && i>=m_input_padding && j>=m_input_padding
-                        && i<boardsize-m_input_padding && j<boardsize-m_input_padding){
-                    input_vals[0][i][j][k]=1.0;
-                    x=i-m_input_padding;
-                    y=j-m_input_padding;
-                    //static_assert(x>=0 && x<boardsize && y>=0 && y<boardsize, "error in make_input_tensor\n");
-                    //be aware of this conversion! pari to int_move: x*boarsize + y
 
-                } 
-                //toplay plane
-                if(k==IndToPlay && toplay==benzene::WHITE){
-                    input_vals[0][i][j][k]=1.0;
+    Tensor board_state = torch::zeros({1, boardsize*boardsize, m_input_depth});
+    Tensor adj_matrix = torch::zeros({boardsize*boardsize, boardsize*boardsize});
+
+    auto is_coord_in_board = [](int x, int y, int boardsize) {
+        return x >= 0 && x < boardsize && y >= 0 && y < boardsize;
+    };
+
+    auto index_from_position = [=](int row, int col, int boardsize) {
+        return row * boardsize + col;
+    };
+
+    for (int i = 0; i < boardsize; ++i) {
+        for (int j = 0; j < boardsize; ++j) {
+            std::vector<std::pair<int, int>> potential_neighbours = {
+                {i, j + 1}, {i + 1, j}, {i - 1, j}, {i, j - 1}, {i - 1, j + 1}, {i + 1, j - 1}
+            };
+            for (const auto& coord : potential_neighbours) {
+                int x = coord.first;
+                int y = coord.second;
+                if (is_coord_in_board(x, y, boardsize)) {
+                    adj_matrix[index_from_position(i, j, boardsize)][index_from_position(x, y, boardsize)] = 1;
                 }
             }
         }
+
+    for (int i = 0; i<boardsize*boardsize; i++) {
+       board_state[0][i][ToPlayEmptyPoints] = 1.0;
     }
 
     //set m_board, and black/white played stones, modify empty points
     for (benzene::BitsetIterator it(black_stones); it; ++it){
         int p=*it-7;
         if (p<0) continue;
-        benzene::HexPointUtil::pointToCoords(*it, x,y);
-        x += m_input_padding;
-        y += m_input_padding;
-        input_vals[0][x][y][BlackStones]=1.0;
-        input_vals[0][x][y][ToPlayEmptyPoints]=0.0;
+
+        if (toplay==benzene::WHITE) {
+            board_state[0][p][BlackStones]=1.0;
+        } else {
+            board_state[0][p][WhiteStones]=1.0;
+        }
+        board_state[0][p][ToPlayEmptyPoints]=0.0;
     }
+
     for (benzene::BitsetIterator it(white_stones); it; ++it){
         int p=*it-7;
         if(p<0) continue;
-        benzene::HexPointUtil::pointToCoords(*it,x,y);
-        x += m_input_padding;
-        y += m_input_padding;
-        input_vals[0][x][y][WhiteStones]=1.0;
-        input_vals[0][x][y][ToPlayEmptyPoints]=0.0;
-    }
-    float *p_input_vals=(float*)input_vals;
-    Tensor* input_tensor = ;
 
+        if (toplay==benzene::WHITE) {
+            board_state[0][p][WhiteStones]=1.0;
+        } else {
+            board_state[0][p][BlackStones]=1.0;
+        }
+        board_state[0][p][ToPlayEmptyPoints]=0.0;
+    }
+
+    std::vector<torch::jit::IValue> input_tensor;
+    input_tensor.push_back(x);
+    input_tensor.push_back(adj_matrix);
     return input_tensor;
 }
 
@@ -87,11 +99,9 @@ Tensor* NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
 float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitset_t &white, benzene::HexColor toplay,
                             std::vector<float> &score, std::vector<float> & qValues, int boardsize) const {
     auto t1=std::chrono::system_clock::now();
-    Tensor* x_input=make_input_tensor(black, white, toplay, boardsize);
-    const std::vector<Tensor*> input_tensors={x_input};
+    std::vector<torch::jit::IValue> inputs=make_input_tensor(black, white, toplay, boardsize);
 
-    int output = m_module();
-
+    torch::Tensor output = m_module.forward(inputs).toTensor();
     float* p_ret=;
     float* v_ret=;
     float* q_ret=;
