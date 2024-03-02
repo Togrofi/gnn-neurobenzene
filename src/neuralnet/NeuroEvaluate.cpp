@@ -1,4 +1,5 @@
 #include<iostream>
+#include <torch/script.h> // One-stop header.
 #include <stdexcept>
 #include<vector>
 #include<utility>
@@ -19,6 +20,9 @@ NNEvaluator::NNEvaluator(){
 
 NNEvaluator::NNEvaluator(std::string model_path):m_module(),
     m_min_q_combine_weight(0.0), m_q_weight_to_p(0.0), m_product_propagate_weight(0.0) {
+    this->m_min_q_combine_weight = 0.0;
+    this->m_q_weight_to_p = 0.0;
+    this->m_product_propagate_weight = 0.0f;
     load_nn_model(model_path);
 }
 
@@ -85,26 +89,28 @@ NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
     }
 
     std::vector<torch::jit::IValue> input_tensor;
-    input_tensor.push_back(x);
+    input_tensor.push_back(board_state);
     input_tensor.push_back(adj_matrix);
     return input_tensor;
 }
 
 /*
  * return:
- * p: probability score of next moves
+ * p: probability prob_score of next moves
  * q: action-value for each next move
  * v: value estimate of current state
  */
 float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitset_t &white, benzene::HexColor toplay,
-                            std::vector<float> &score, std::vector<float> & qValues, int boardsize) const {
+                            std::vector<float> &prob_score, std::vector<float> & qValues, int boardsize) const {
     auto t1=std::chrono::system_clock::now();
     std::vector<torch::jit::IValue> inputs=make_input_tensor(black, white, toplay, boardsize);
 
     torch::Tensor output = m_module.forward(inputs).toTensor();
-    float* p_ret=;
-    float* v_ret=;
-    float* q_ret=;
+    std::cout << output.sizes() << '\n';
+    std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
+    float* p_ret;
+    float* v_ret;
+    float* q_ret;
     float value_estimate=v_ret[0];
 
     float max_value=-FLT_MAX;
@@ -118,10 +124,10 @@ float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitse
         size_t posi=benzene::HexPointUtil::coordsToPoint(x,y);
         if(black.test(posi) || white.test(posi)){
             //ignore played points
-            score[i]=0.0;
+            prob_score[i]=0.0;
             continue;
         }
-        score[i]=0.0;
+        prob_score[i]=0.0;
         empty_points.push_back(i);
         if(max_value < p_ret[i]){
             max_value=p_ret[i];
@@ -131,25 +137,25 @@ float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitse
             min_q_value=q_ret[i];
         }
         qValues[i]=(q_ret[i]+1.0)/2.0f;//convert to [0,1]
-        score[i]=p_ret[i];
+        prob_score[i]=p_ret[i];
     }
     double product_propagate_prob=1.0;
     float sum_value=0.0;
     for(int &i:empty_points){
-        score[i]=(float)exp((score[i]-max_value));
-        sum_value = sum_value+score[i];
+        prob_score[i]=(float)exp((prob_score[i]-max_value));
+        sum_value = sum_value+prob_score[i];
     }
     double avg_v=0.0;
     double q_value_with_max_p;
     double max_p=-1.0;
     for(int &i: empty_points){
-        score[i]=score[i]/sum_value;
-        avg_v += score[i]*(1.0-qValues[i]);
-        score[i]=(1.0-m_q_weight_to_p)*score[i]+m_q_weight_to_p*(1.0-qValues[i]);
-        if(score[i]>=0.01) 
+        prob_score[i]=prob_score[i]/sum_value;
+        avg_v += prob_score[i]*(1.0-qValues[i]);
+        prob_score[i]=(1.0-m_q_weight_to_p)*prob_score[i]+m_q_weight_to_p*(1.0-qValues[i]);
+        if(prob_score[i]>=0.01)
             product_propagate_prob *= qValues[i];
-        if(score[i]>max_p){
-            max_p=score[i];
+        if(prob_score[i]>max_p){
+            max_p=prob_score[i];
             q_value_with_max_p=(1.0-qValues[i]);
         }
     }
