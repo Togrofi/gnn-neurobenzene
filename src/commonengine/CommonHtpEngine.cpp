@@ -25,7 +25,7 @@ using namespace benzene;
 
 CommonHtpEngine::CommonHtpEngine(int boardsize)
     : HexHtpEngine(boardsize),
-      m_nn(std::make_shared<NNEvaluator>(std::string(ABS_TOP_SRCDIR)+"/share/nn/11x11train4.txt.out-post.ckpt-1.const.pb")),
+      m_nn(std::make_shared<NNEvaluator>(std::string(ABS_TOP_SRCDIR)+"/share/nn/model.pt")),
       m_pe(m_board.Width(), m_board.Height()),
       m_se(m_board.Width(), m_board.Height()),
       m_dfsSolver(),
@@ -147,6 +147,7 @@ void CommonHtpEngine::CmdNeuralEvaluate(HtpCommand& cmd, bool asPspairs)
         cmd<<"boardsize:"<<boardsize<<", toplay:"<<HexColorUtil::toString(toplay)<<"\n";
     std::vector<float> prob_score(boardsize*boardsize);
     std::vector<float> qValues(boardsize*boardsize);
+    std::cout << "hi8" << '\n';
     float state_value=m_nn->evaluate(black_played, white_played, toplay, prob_score, qValues, static_cast<int>(boardsize));
     if (!asPspairs)
         cmd<<"state_value:"<<state_value<<"; p, q are (only moves p_i >=0.01): \n";

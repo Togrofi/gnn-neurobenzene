@@ -25,7 +25,7 @@
 class NNEvaluator {
 
 public:
-    torch::jit::script::Module m_module;
+    torch::jit::script::Module *m_module;
     std::string m_neural_model_path;
     const static size_t m_input_depth=3;
     const static int ToPlayEmptyPoints=0;
@@ -44,3 +44,5 @@ public:
     std::vector<torch::jit::IValue> make_input_tensor(const benzene::bitset_t &black_stones, const benzene::bitset_t &white_stones,
                                                       benzene::HexColor toplay, int boardsize) const;
 };
+
+#endif

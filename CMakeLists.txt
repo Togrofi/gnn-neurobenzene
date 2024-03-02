@@ -3,7 +3,7 @@ project(benzene-cmake)
 
 find_package(Boost COMPONENTS thread system filesystem program_options date_time)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(pkgdatadir ${CMAKE_CURRENT_SOURCE_DIR}/share)
 set(top_srcdir ${CMAKE_CURRENT_SOURCE_DIR})
 add_definitions(-DABS_TOP_SRCDIR="${top_srcdir}"
@@ -11,10 +11,10 @@ add_definitions(-DABS_TOP_SRCDIR="${top_srcdir}"
         -DNDEBUG
         )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -Wconversion -Wextra")
+set(CMAKE_CXX_FLAGS "-std=c++20 -O3 -Wconversion -Wextra")
 if (${APPLE}) 
     message("using -stdlib=libc++")
-    set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -O3 -Wconversion -Wextra")
+    set(CMAKE_CXX_FLAGS "-std=c++20 -stdlib=libc++ -O3 -Wconversion -Wextra")
     set(CMAKE_EXE_LINKER_FLAGS "-stdlib=libc++")
 endif()
 
