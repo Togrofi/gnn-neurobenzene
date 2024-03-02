@@ -101,17 +101,14 @@ NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
  * v: value estimate of current state
  */
 float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitset_t &white, benzene::HexColor toplay,
-                            std::vector<float> &prob_score, std::vector<float> & qValues, int boardsize) const {
+                            std::vector<float> &score, std::vector<float> & qValues, int boardsize) const {
     auto t1=std::chrono::system_clock::now();
     std::vector<torch::jit::IValue> inputs=make_input_tensor(black, white, toplay, boardsize);
 
-    torch::Tensor output = m_module.forward(inputs).toTensor();
-    std::cout << output.sizes() << '\n';
-    std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
-    float* p_ret;
-    float* v_ret;
-    float* q_ret;
-    float value_estimate=v_ret[0];
+    torch::Tensor output = m_module.forward(inputs).toTensor()[0];
+    Tensor p_ret = output.slice(/*dim=*/0, /*start=*/0, /*end=*/121);
+    Tensor q_ret = output.slice(/*dim=*/0, /*start=*/0, /*end=*/121);
+    float value_estimate = output[-1].item<float>();
 
     float max_value=-FLT_MAX;
     std::vector<int> empty_points;
