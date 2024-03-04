@@ -25,12 +25,12 @@
 class NNEvaluator {
 
 public:
-    torch::jit::script::Module *m_module;
     std::string m_neural_model_path;
     const static size_t m_input_depth=3;
     const static int ToPlayEmptyPoints=0;
     const static int WhiteStones=1;
     const static int BlackStones=2;
+    mutable torch::jit::Module m_module;
     double m_min_q_combine_weight;
     double m_q_weight_to_p;
     double m_product_propagate_weight;

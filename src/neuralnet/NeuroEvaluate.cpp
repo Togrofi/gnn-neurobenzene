@@ -18,37 +18,17 @@ typedef torch::Tensor Tensor;
 NNEvaluator::NNEvaluator(){
 }
 
-NNEvaluator::NNEvaluator(std::string model_path):m_module(nullptr),
+NNEvaluator::NNEvaluator(std::string model_path):
     m_min_q_combine_weight(0.0), m_q_weight_to_p(0.0), m_product_propagate_weight(0.0) {
     this->m_min_q_combine_weight = 0.0;
     this->m_q_weight_to_p = 0.0;
     this->m_product_propagate_weight = 0.0f;
     load_nn_model(model_path);
 }
-
 void NNEvaluator::load_nn_model(std::string model_path){
-   // m_module = torch::jit::load(model_path, torch::kCPU);
-    std::cout << "Here" << '\n';
-    torch::jit::script::Module temp_module;
-    try {
-        temp_module = torch::jit::load(model_path, torch::kCPU);
-        std::cout << "loaded successfully" << '\n';
-    } catch (const c10::Error& e) {
-        std::cerr << "Error loading the model: " << e.msg() << std::endl;
-        // Handle the error, return false, or take appropriate action.
-    }
-    m_module = &temp_module;
-    assert(m_module->is_script_module());
-    std::vector<torch::jit::IValue> inputs;
-    torch::Tensor xs = torch::ones({1, 121, 3});
-    torch::Tensor adj_matrix = torch::ones({121, 121});
-
-    inputs.push_back(xs);
-    inputs.push_back(adj_matrix);
-    Tensor output = m_module->forward(inputs).toTensor()[0];
-    std::cout << output.slice(/*dim=*/0, /*start=*/0, /*end=*/121) << '\n';
-    std::cout << "Here2" << '\n';
+    this->m_module = torch::jit::load(model_path, torch::kCPU);
 }
+
 std::vector<torch::jit::IValue>
 NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
                                     const benzene::bitset_t &white_stones, benzene::HexColor toplay, 
@@ -124,28 +104,12 @@ NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
 float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitset_t &white, benzene::HexColor toplay,
                             std::vector<float> &prob_score, std::vector<float> & qValues, int boardsize) const {
     auto t1=std::chrono::system_clock::now();
-    std::cout << "hi" << '\n';
-    //const std::vector<torch::jit::IValue> inputs=make_input_tensor(black, white, toplay, boardsize);
-    std::vector<torch::jit::IValue> inputs;
-    torch::Tensor xs = torch::ones({1, 121, 3});
-    torch::Tensor adj_matrix = torch::ones({121, 121});
+    const std::vector<torch::jit::IValue> inputs=make_input_tensor(black, white, toplay, boardsize);
 
-    inputs.push_back(xs);
-    inputs.push_back(adj_matrix);
-
-    std::cout << xs.sizes() << '\n';
-    std::cout << adj_matrix.sizes() << '\n';
-
-    assert(m_module->is_script_module());
-    std::cout << "hi25" << '\n';
-    Tensor output = m_module->forward(inputs).toTensor()[0];
-    std::cout << "hi26" << '\n';
+    Tensor output = m_module.forward(inputs).toTensor()[0];
     float* p_ret = output.slice(/*dim=*/0, /*start=*/0, /*end=*/121).data_ptr<float>();
-    std::cout << "hi27" << '\n';
     float* q_ret = output.slice(/*dim=*/0, /*start=*/0, /*end=*/121).data_ptr<float>();
-    std::cout << "hi28" << '\n';
     float value_estimate = output[-1].item<float>();
-    std::cout << "hi2" << '\n';
     float max_value=-FLT_MAX;
     std::vector<int> empty_points;
     int max_ind=-1;
@@ -193,7 +157,6 @@ float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitse
         }
     }
 
-    std::cout << "hi3" << '\n';
     //convert from [-1.0,1.0] to [0.0,1.0]
     double converted_min_q_value=(-min_q_value+1.0)/2.0f;
     converted_min_q_value=q_value_with_max_p;
@@ -202,6 +165,7 @@ float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitse
     value_estimate=(1.0-m_product_propagate_weight)*value_estimate + m_product_propagate_weight*(1.0-product_propagate_prob);
 
     auto t2=std::chrono::system_clock::now();
-    std::cout<<"time cost per eva:"<<std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count()/1e06<<" seconds\n";
+    //std::cout<<"time cost per eva:"<<std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count()/1e06<<" seconds\n";
     return value_estimate;
+    return 0.0f;
 }
