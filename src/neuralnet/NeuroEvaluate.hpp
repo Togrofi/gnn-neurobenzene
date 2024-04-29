@@ -26,11 +26,11 @@ class NNEvaluator {
 
 public:
     std::string m_neural_model_path;
+    mutable torch::jit::Module m_module;
     const static size_t m_input_depth=3;
     const static int ToPlayEmptyPoints=0;
     const static int WhiteStones=1;
     const static int BlackStones=2;
-    mutable torch::jit::Module m_module;
     double m_min_q_combine_weight;
     double m_q_weight_to_p;
     double m_product_propagate_weight;
@@ -43,6 +43,11 @@ public:
                    std::vector<float> &pScore, std::vector<float> &qValues, int boardsize) const;
     std::vector<torch::jit::IValue> make_input_tensor(const benzene::bitset_t &black_stones, const benzene::bitset_t &white_stones,
                                                       benzene::HexColor toplay, int boardsize) const;
+private:
+    mutable torch::Tensor adj_matrix;
+    mutable int current_adj_matrix_size;
+private:
+    void generate_adj_matrix(int boardsize) const;
 };
 
 #endif

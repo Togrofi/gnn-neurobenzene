@@ -20,22 +20,17 @@ NNEvaluator::NNEvaluator(){
 
 NNEvaluator::NNEvaluator(std::string model_path):
     m_min_q_combine_weight(0.0), m_q_weight_to_p(0.0), m_product_propagate_weight(0.0) {
-    this->m_min_q_combine_weight = 0.0;
-    this->m_q_weight_to_p = 0.0;
-    this->m_product_propagate_weight = 0.0f;
+    NNEvaluator::m_min_q_combine_weight = 0.0;
+    NNEvaluator::m_q_weight_to_p = 0.0;
+    NNEvaluator::m_product_propagate_weight = 0.0f;
     load_nn_model(model_path);
 }
 void NNEvaluator::load_nn_model(std::string model_path){
     this->m_module = torch::jit::load(model_path, torch::kCPU);
 }
 
-std::vector<torch::jit::IValue>
-NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
-                                    const benzene::bitset_t &white_stones, benzene::HexColor toplay, 
-                                    int boardsize) const {
-
-    Tensor board_state = torch::zeros({1, boardsize*boardsize, m_input_depth});
-    Tensor adj_matrix = torch::zeros({boardsize*boardsize, boardsize*boardsize});
+void NNEvaluator::generate_adj_matrix(int boardsize) const {
+    Tensor temp_adj_matrix = torch::zeros({boardsize*boardsize, boardsize*boardsize});
 
     auto is_coord_in_board = [](int x, int y, int boardsize) {
         return x >= 0 && x < boardsize && y >= 0 && y < boardsize;
@@ -54,11 +49,25 @@ NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
                 int x = coord.first;
                 int y = coord.second;
                 if (is_coord_in_board(x, y, boardsize)) {
-                    adj_matrix[index_from_position(i, j, boardsize)][index_from_position(x, y, boardsize)] = 1;
+                    temp_adj_matrix[index_from_position(i, j, boardsize)][index_from_position(x, y, boardsize)] = 1;
                 }
             }
         }
     }
+   this->current_adj_matrix_size = boardsize;
+   this->adj_matrix = temp_adj_matrix;
+}
+
+std::vector<torch::jit::IValue>
+NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
+                                    const benzene::bitset_t &white_stones, benzene::HexColor toplay, 
+                                    int boardsize) const {
+
+    if (boardsize != this->current_adj_matrix_size) {
+        generate_adj_matrix(boardsize);
+    }
+
+    Tensor board_state = torch::zeros({1, boardsize*boardsize, m_input_depth});
 
     for (int i = 0; i<boardsize*boardsize; i++) {
        board_state[0][i][ToPlayEmptyPoints] = 1.0;
@@ -167,5 +176,4 @@ float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitse
     auto t2=std::chrono::system_clock::now();
     //std::cout<<"time cost per eva:"<<std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count()/1e06<<" seconds\n";
     return value_estimate;
-    return 0.0f;
 }
