@@ -1,5 +1,4 @@
-# neurobenzene: An improved benzene project for playing and solving Hex with the help of deep neural networks
-
+# gnn-neurobenzene: a fork of the neurobenzene project that adds our custom GNNs to MoHex
 This reposotory is built upon [neurobenzene](https://github.com/cgao3/neurobenzene). 
 
 ### Prerequisites 
