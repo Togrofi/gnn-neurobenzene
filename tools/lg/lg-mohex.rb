@@ -14,7 +14,7 @@ class MoHexBot < BenzeneBot
         super(LOGIN,ps,BOSS_ID)
     end
     def genmove(size, moves)
-        gtp = GTPClient.new(@logger, "build/src/mohex/mohex3HNN --config=config.htp")
+        gtp = GTPClient.new(@logger, "build/src/mohex/mohexGNN --config=config.htp")
         sleep 1
         gtp.cmd('boardsize ' + size.to_s)
         gtp.cmd('param_game on_little_golem 1')
