@@ -1,6 +1,6 @@
 # neurobenzene: An improved benzene project for playing and solving Hex with the help of deep neural networks
 
-This reposotory is built upon [benzene-vanilla-cmake](https://github.com/cgao3/benzene-vanilla-cmake). 
+This reposotory is built upon [neurobenzene](https://github.com/cgao3/neurobenzene). 
 
 ### Prerequisites 
 
