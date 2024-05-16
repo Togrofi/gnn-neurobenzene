@@ -15,18 +15,17 @@ sudo apt-get install libdb-dev
 ``` 
 
 On Mac, use `brew` instead.
-
-LibTorch is also required.
+We also need [LibTorch](https://pytorch.org/) to handle our GNN models.
 
 ### How to build? 
 
 After everything is ready, build the project by: 
 ```sh
 $mkdir build
-$cd build
-$cmake ../
-$make 
+$cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+$cmake --build . --config Release
 ```
+Where /path/to/libtorch should be the full path to the unzipped LibTorch distribution.
 
 On Mac, there might be `linking error` to `db` or `boost`, in such case, you may revise your `~/.bash_profile` (Mac OS), e.g., 
 ```
