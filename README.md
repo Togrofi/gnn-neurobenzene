@@ -16,6 +16,8 @@ sudo apt-get install libdb-dev
 
 On Mac, use `brew` instead.
 
+LibTorch is also required.
+
 ### How to build? 
 
 After everything is ready, build the project by: 
@@ -61,13 +63,6 @@ Try ``./build/src/mohex/mohexGNN``
          10\.  .  .  .  .  .  .  .  .  .  .\10
           11\.  .  .  .  .  .  .  .  .  .  .\11
               a  b  c  d  e  f  g  h  i  j  k  
-
-nn_ls
-= Loaded neural net: /home/chenyang/cg/neurobenzene/share/nn/11x11train4.txt.out-post.ckpt-1.const.pb
-Use nn_load nn_model for new model, note nn_model should be a full path or just model name if it is available in share/nn/
-List available nn models at share/nn/
-13x13train30.txt.out-post.ckpt-2.const.pb
-11x11train4.txt.out-post.ckpt-1.const.pb
 
 play b g3
 = 
@@ -143,14 +138,9 @@ quit
 = 
 ```
 
-### Train the neural net
-
-In subdir ``simplefeature3``, there is a relatively independent Python project 
-used to train the neural net. 
-
 ### Commands and Parameters
 
-Newly added commands:
+Neural net commands:
 ```
 nn_load <path_to_nn_model> # if no parameter followed, display the loaded model
 nn_evaluate #evaluate the current board state by a forward pass
@@ -206,7 +196,7 @@ param_mohex
 [string] use_playout_const 0
 
 ```
-new commands
+Neural net commands
 
 ```
 nn_load 
@@ -239,26 +229,6 @@ One example game:
 ``
 B[b3] W[j4][j4:0.37;i5:0.06;h6:0.02;g7:0.05;f8:0.12;e9:0.12;d10:0.22;] B[i5][k4:0.08;i5:0.85;] W[i4][k2:0.01;l2:0.04;j3:0.01;k3:0.02;l3:0.25;i4:0.30;k4:0.10;j5:0.04;k5:0.15;k6:0.05;] B[h5][h5:0.95;] W[h4][h4:0.95;] B[g5][f5:0.02;g5:0.95;] W[g4][g4:0.98;] B[f5][e5:0.09;f5:0.89;] W[f4][f4:0.98;] B[e5][d5:0.35;e5:0.63;] W[e4][e4:0.96;] B[d5][c5:0.17;d5:0.79;] W[d4][d4:0.95;] B[c5][b5:0.19;c5:0.80;] W[c4][c4:0.96;] B[a5][a5:0.97;] W[b5][b5:0.97;] B[a6][a6:0.97;] W[b6][b6:0.97;] B[a7][a7:0.98;] W[b7][b7:0.96;] B[a8][a8:0.98;] W[b8][b8:0.98;] B[a9][a9:0.98;] W[b9][b9:0.97;] B[a10][a10:0.98;] W[b10][b10:0.91;b11:0.04;b12:0.03;] B[a11][a11:0.97;] W[b12][b11:0.02;b12:0.98;] B[b11][c10:0.14;b11:0.83;] W[c11][c11:0.54;d11:0.42;] B[c10][c10:0.95;] W[d10][d10:0.67;e10:0.19;f10:0.05;] B[d8][d8:0.68;d9:0.08;f9:0.03;e10:0.17;] W[d9][c2:0.01;g8:0.02;h8:0.07;d9:0.67;f9:0.03;g9:0.02;h9:0.03;f10:0.06;g10:0.06;] B[c9][c9:0.97;] W[h8][g8:0.04;h8:0.25;i8:0.12;h9:0.21;f10:0.22;g10:0.04;e11:0.01;f11:0.06;] B[i8][j7:0.02;g8:0.02;i8:0.91;f9:0.01;] W[i7][i7:0.73;h9:0.09;i9:0.14;] B[j7][k6:0.16;j7:0.71;g8:0.01;f9:0.08;] W[h9][j6:0.39;h9:0.57;] B[e10][j6:0.26;i9:0.23;j9:0.06;e10:0.42;] W[d12][c2:0.13;e8:0.02;f8:0.30;e11:0.10;d12:0.41;] B[j6][j6:0.91;i9:0.03;f11:0.03;] W[i9][i9:0.66;i10:0.30;] B[j9][k8:0.10;j9:0.85;f11:0.02;] W[j8][j8:0.96;] B[l7][l7:0.98;] W[k7][j5:0.01;k7:0.81;k8:0.04;f11:0.12;] B[l6][k6:0.04;l6:0.92;] W[k6][k2:0.05;l3:0.05;k4:0.05;k6:0.77;k8:0.04;f11:0.01;] B[l5][l5:0.96;] W[k8][j5:0.05;k5:0.06;k8:0.62;f11:0.23;] B[l8][l8:0.96;] W[k9][j5:0.09;k5:0.10;k9:0.75;f11:0.03;] B[l9][l9:0.95;k11:0.01;] W[k11][j5:0.04;k5:0.08;k10:0.13;k11:0.72;] B[k10][k10:0.92;f11:0.05;k12:0.01;] W[j11][j5:0.01;k5:0.10;j11:0.86;] B[j10][j10:0.96;k12:0.01;] W[j5][j5:0.57;k5:0.11;i11:0.29;] B[k5][k5:0.96;] W[i6][i6:0.96;i11:0.01;] B[l3][l3:0.51;f11:0.19;h11:0.21;i11:0.08;] W[i11][l2:0.06;i11:0.93;] B[k12][f8:0.10;m10:0.20;e11:0.15;f11:0.11;g11:0.09;h11:0.11;k12:0.22;] W[l10][l10:1.00;] B[h11][f8:0.04;g10:0.03;e11:0.15;f11:0.27;g11:0.19;h11:0.31;] W[g12][c2:0.02;d2:0.03;g12:0.95;] B[e12][f8:0.08;g10:0.01;g11:0.05;e12:0.56;f12:0.02;h12:0.25;] W[f11][f11:0.98;g11:0.01;] B[g10][f8:0.07;g10:0.54;h12:0.39;] W[e11][e11:1.00;] -1.000000
 ``
-
-### Closed loop
-
-
-A closed loop shell which does
-1) call mohex-self-play produce a set of games
-2) refine neural net on those games by running ../simplefeature3/neuralnet/resnet.py  
-3) freeze trained neural net via ../simplefeature3/freeze_graph/freeze_graph_main.py
-4) use nn_load to load new nn model 
-5) Go back to step 1
-
- Since step 1) is rather time and computation consuming,
- e.g., 20-block version AlphaGo Zero generated over 4 million games.
- How fast is mohex-self-play on a single GPU GTX1080 computer? 
- If 1000 simulations per move, a move consumes about 1s (would be slower if using `expand_threshold 0`).
- So if a game has 60 moves, then it takes 10^6 minutes for 1 million game
- 1 million minutes is 10**6/60.0 ~= 700 days
-
-Closed loop scripts are at `closedloop/`
-
 ### MCTS
 
 In-tree formula
@@ -289,10 +259,8 @@ See
 
 ### Authors
 
-This project is developed by:
-
-
-* **Chao Gao** - *main developer*
+This project was forked from code developed by:
+* **Chao Gao**
 * **Jakub Pawlewicz** 
 
 ### License
