@@ -41,7 +41,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/Cellar/boost/1.64.0_1/lib
 
 ### Running some tests 
 
-Try ``./build/src/mohex/mohex3HNN``
+Try ``./build/src/mohex/mohexGNN``
 
 ```
  showboard

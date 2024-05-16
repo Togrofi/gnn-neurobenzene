@@ -18,8 +18,8 @@ ELSEIF (UNIX)
     link_directories(/usr/lib/x86_64-linux-gnu)
 ENDIF()
 
-add_executable(mohex3HNN ${mohex_SRC})
-target_link_libraries(mohex3HNN
+add_executable(mohexGNN ${mohex_SRC})
+target_link_libraries(mohexGNN
         nnevaluate
         hex
         util 

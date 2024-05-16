@@ -7,6 +7,9 @@
 #include <cfloat>
 #include <cassert>
 
+#include <unordered_map>
+#include <unordered_set>
+
 #include "NeuroEvaluate.hpp"
 
 typedef std::vector<float> v1d;
@@ -31,6 +34,7 @@ void NNEvaluator::load_nn_model(std::string model_path){
 }
 
 void NNEvaluator::generate_adj_matrix(int boardsize) const {
+    std::cout << boardsize <<'\n';
     //if () {
         Tensor temp_adj_matrix = torch::zeros({boardsize*boardsize, boardsize*boardsize});
 
@@ -61,6 +65,65 @@ void NNEvaluator::generate_adj_matrix(int boardsize) const {
     //} else if () {
     //}
 }
+
+// void NNEvaluator::generate_edge_indices(int boardsize) const {
+//     //if () {
+//         Tensor temp_edge_indices = torch::zeros({boardsize*boardsize, boardsize*boardsize});
+//
+//         auto is_coord_in_board = [](int x, int y, int boardsize) {
+//             return x >= 0 && x < boardsize && y >= 0 && y < boardsize;
+//         };
+//
+//         auto index_from_position = [=](int row, int col, int boardsize) {
+//             return row * boardsize + col;
+//         };
+//
+//         for (int i = 0; i < boardsize; ++i) {
+//             for (int j = 0; j < boardsize; ++j) {
+//                 std::vector<std::pair<int, int>> potential_neighbours = {
+//                 {i, j + 1}, {i + 1, j}, {i - 1, j}, {i, j - 1}, {i - 1, j + 1}, {i + 1, j - 1}
+//             };
+//                 for (const auto& coord : potential_neighbours) {
+//                     int x = coord.first;
+//                     int y = coord.second;
+//                     if (is_coord_in_board(x, y, boardsize)) {
+//                         temp_adj_matrix[index_from_position(i, j, boardsize)][index_from_position(x, y, boardsize)] = 1;
+//                     }
+//                 }
+//             }
+//         }
+//         this->current_adj_matrix_size = boardsize;
+//         this->adj_matrix = temp_adj_matrix;
+//     //} else if () {
+//     //}
+
+// Assuming num_tiles, board_width, is_coord_in_board(), index_from_position(), and other necessary functions are declared/defined elsewhere
+
+// //std::unordered_map<int, std::unordered_set<int>>
+// viod NNEvaluator::generate_edge_adj_sets(int boardsize) {
+//     std::unordered_map<int, std::unordered_set<int>> adjacencySetsByNode;
+//
+//     for (int n = 0; n < boardsize*boardsize; ++n) {
+//         adjacencySetsByNode[n] = std::unordered_set<int>();
+//     }
+//
+//     for (int i = 0; i < boardsize; ++i) {
+//         for (int j = 0; j < boardsize; ++j) {
+//             std::vector<std::pair<int, int>> potentialNeighbours = {{i, j+1}, {i+1, j}, {i-1, j}, {i, j-1}, {i-1, j+1}, {i+1, j-1}};
+//             for (const auto& coord : potentialNeighbours) {
+//                 int x = coord.first;
+//                 int y = coord.second;
+//                 if (is_coord_in_board(x, y)) {
+//                     adjacencySetsByNode[index_from_position(i, j)].insert(index_from_position(x, y));
+//                 }
+//             }
+//         }
+//     }
+//
+//     return adjacencySetsByNode;
+// }
+// }
+
 
 std::vector<torch::jit::IValue>
 NNEvaluator::make_input_tensor(const benzene::bitset_t &black_stones,
@@ -121,9 +184,9 @@ float NNEvaluator::evaluate(const benzene::bitset_t &black, const benzene::bitse
     // auto t2=std::chrono::system_clock::now();
     Tensor output = m_module.forward(inputs).toTensor()[0];
     // auto t3=std::chrono::system_clock::now();
-    float* p_ret = output.slice(/*dim=*/0, /*start=*/0, /*end=*/121).data_ptr<float>();
-    float* q_ret = output.slice(/*dim=*/0, /*start=*/0, /*end=*/121).data_ptr<float>();
-    //std::cout << output.slice(/*dim=*/0, /*start=*/0, /*end=*/121) << '\n';
+    float* p_ret = output.slice(/*dim=*/0, /*start=*/0, /*end=*/boardsize*boardsize).data_ptr<float>();
+    float* q_ret = output.slice(/*dim=*/0, /*start=*/0, /*end=*/boardsize*boardsize).data_ptr<float>();
+    //std::cout << output.slice(/*dim=*/0, /*start=*/0, /*end=*/boardsize*boardsize) << '\n';
     float value_estimate = output[-1].item<float>();
     float max_value=-FLT_MAX;
     std::vector<int> empty_points;
